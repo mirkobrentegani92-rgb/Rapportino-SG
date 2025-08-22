@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SG SOLARGARDA SRL – Rapportino di Cantiere</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+  :root {
+    --a4-w: 210mm;
+    --a4-h: 297mm;
+    --pad: 10mm;
+    --fg: #0f172a;
+    --muted: #475569;
+    --line: #0f172a;
+    --brand: #0f172a;
+    --bg: #f6f7fb;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
+  }
+  html, body { height: 100%; background: var(--bg); }
+  body { margin: 0; font-family: var(--font); color: var(--fg); }
+  .app {
+    display: grid; grid-template-columns: 420px 1fr; gap: 18px; padding: 18px;
+  }
+  /* Pannello */
+  .panel {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;
+    position: sticky; top: 18px; box-shadow: 0 2px 6px rgba(15,23,42,.05);
+  }
+  .panel h2 { margin: 0 0 12px; font-size: 18px; }
+  .grid { display: grid; gap: 10px; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+  input[type="text"], input[type="date"], input[type="number"], textarea, select {
+    width: 100%; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 12px; font-size: 14px; background: #fff;
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  .hint { color: var(--muted); font-size: 12px; }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  button {
+    appearance: none; border: 1px solid #0f172a; background: #0f172a; color: #fff; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600;
+  }
+  .btn-secondary { background: #fff; color: #0f172a; border-color: #cbd5e1; }
+
+  /* Foglio A4 */
+  .sheet {
+    width: var(--a4-w); min-height: var(--a4-h); background: #fff; margin: 0 auto; border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 6px rgba(15,23,42,.05); position: relative;
+  }
+  .sheet-inner { padding: var(--pad); }
+  .header {
+    display: grid; grid-template-columns: 1fr auto; gap: 8mm; align-items: center; border-bottom: 2px solid var(--line);
+    padding-bottom: 6mm; margin-bottom: 6mm;
+  }
+  .brand {
+    display:flex; flex-direction:column; gap:3mm;
+  }
+  .brand-name {
+    font-weight: 900; letter-spacing: .6px; font-size: 18pt; color: var(--brand);
+  }
+  .brand-sub { color: var(--muted); font-size: 10pt; }
+  .logo-box {
+    width: 34mm; height: 34mm; border: 1px dashed #cbd5e1; display: grid; place-items: center; font-size: 10px; color: #94a3b8; overflow: hidden;
+  }
+  .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .meta {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin-bottom: 6mm;
+  }
+  .field {
+    border: 1px solid var(--line); padding: 3mm; min-height: 12mm; border-radius: 4px;
+  }
+  .field .lbl { font-size: 9pt; color: var(--muted); margin-bottom: 1mm; }
+  .field .val { font-size: 11pt; font-weight: 600; min-height: 6mm; white-space: pre-wrap; }
+  .table { width: 100%; border-collapse: collapse; margin-top: 3mm; font-size: 10.5pt; }
+  .table th, .table td { border: 1px solid var(--line); padding: 2.5mm; }
+  .table th { text-align: left; background: #f8fafc; }
+  .section-title { margin-top: 4mm; margin-bottom: 2mm; font-weight: 800; font-size: 11pt; letter-spacing: .2px; }
+  .sign-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; margin-top: 8mm; }
+  .signature-box { border: 1px solid var(--line); height: 35mm; position: relative; display: grid; place-items: center; border-radius: 4px; }
+  .signature-box .hint { position: absolute; top: 4px; left: 6px; font-size: 9pt; color: var(--muted); }
+  .signature-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .footer {
+    position: absolute; bottom: 0; left: 0; right: 0; border-top: 1.5px solid var(--line);
+    padding: 3mm var(--pad); font-size: 9pt; color: var(--muted);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .page-hint { font-size: 11px; color: #64748b; text-align: center; margin: 10px 0; }
+
+  /* Responsive */
+  @media (max-width: 980px) {
+    .app { grid-template-columns: 1fr; }
+    .panel { position: static; order: 2; }
+    .sheet { order: 1; }
+  }
+
+  /* Stampa */
+  @page { size: A4; margin: 10mm; }
+  @media print {
+    body { background: #fff; }
+    .app { display: block; padding: 0; }
+    .panel, .page-hint { display: none !important; }
+    .sheet { border: none; box-shadow: none; margin: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="panel">
+    <h2>Dati Rapportino</h2>
+    <div class="grid">
+      <div class="row-2">
+        <div>
+          <label>Luogo</label>
+          <input type="text" id="luogo" placeholder="Cantiere / Indirizzo" />
+        </div>
+        <div>
+          <label>Data</label>
+          <input type="date" id="data" />
+        </div>
+      </div>
+      <div class="row-2">
+        <div>
+          <label>N. Rapportino</label>
+          <input type="text" id="num" placeholder="Es. 2025-001" />
+        </div>
+        <div>
+          <label>Commessa</label>
+          <input type="text" id="commessa" placeholder="Codice commessa" />
+        </div>
+      </div>
+      <div class="row-2">
+        <div>
+          <label>Operatore</label>
+          <input type="text" id="operatore" placeholder="Nome e cognome" />
+        </div>
+        <div>
+          <label>Ore lavorate</label>
+          <input type="number" step="0.25" id="ore" placeholder="0" />
+        </div>
+      </div>
+      <div>
+        <label>Attività svolta</label>
+        <textarea id="attivita" placeholder="Descrizione dettagliata..."></textarea>
+      </div>
+      <div>
+        <label>Materiali (una voce per riga: DESCRIZIONE | QTY | UM)</label>
+        <textarea id="materiali" placeholder="Cemento 32.5 | 12 | sacchi&#10;Tubi PVC Ø50 | 8 | pz"></textarea>
+      </div>
+      <div class="row-2">
+        <div>
+          <label>Firma (disegna qui sotto)</label>
+          <canvas id="pad" style="width:100%; height:180px; border:1px solid #d1d5db; border-radius:10px; background:#fff; touch-action: none;"></canvas>
+          <div class="btns">
+            <button type="button" class="btn-secondary" id="clearSig">Pulisci firma</button>
+          </div>
+        </div>
+        <div>
+          <label>Logo aziendale (opzionale)</label>
+          <input type="file" id="logo" accept="image/*" />
+          <div class="hint">Comparirà in alto a destra</div>
+        </div>
+      </div>
+      <div class="btns">
+        <button type="button" id="stampa">Stampa / PDF</button>
+        <button type="button" class="btn-secondary" id="salva">Salva dati</button>
+        <button type="button" class="btn-secondary" id="ripristina">Ripristina</button>
+        <button type="button" class="btn-secondary" id="reset">Svuota</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Foglio A4 -->
+  <div class="sheet" id="sheet">
+    <div class="sheet-inner">
+      <div class="header">
+        <div class="brand">
+          <div class="brand-name" id="pv-brand">SG SOLARGARDA SRL</div>
+          <div class="brand-sub">Rapportino di cantiere • <span id="pv-luogo">Luogo</span> — <span id="pv-data">Data</span></div>
+        </div>
+        <div class="logo-box" id="pv-logo"><span>LOGO</span></div>
+      </div>
+
+      <div class="meta">
+        <div class="field">
+          <div class="lbl">N. Rapportino</div>
+          <div class="val" id="pv-num">&nbsp;</div>
+        </div>
+        <div class="field">
+          <div class="lbl">Commessa</div>
+          <div class="val" id="pv-commessa">&nbsp;</div>
+        </div>
+        <div class="field">
+          <div class="lbl">Operatore</div>
+          <div class="val" id="pv-operatore">&nbsp;</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">Attività svolta</div>
+        <div class="val" id="pv-attivita" style="min-height:28mm;"></div>
+      </div>
+
+      <div class="section-title">Materiali</div>
+      <table class="table" id="pv-mat-table">
+        <thead>
+          <tr>
+            <th style="width:60%;">Descrizione</th>
+            <th style="width:20%;">Quantità</th>
+            <th style="width:20%;">UM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="height:10mm;"></td><td></td><td></td></tr>
+          <tr><td style="height:10mm;"></td><td></td><td></td></tr>
+          <tr><td style="height:10mm;"></td><td></td><td></td></tr>
+          <tr><td style="height:10mm;"></td><td></td><td></td></tr>
+          <tr><td style="height:10mm;"></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+
+      <div class="sign-row">
+        <div>
+          <div class="lbl" style="margin-bottom:2mm;">Firma</div>
+          <div class="signature-box">
+            <span class="hint">Apporre la firma all’interno del riquadro</span>
+            <img id="pv-firma" alt="Firma" />
+          </div>
+        </div>
+        <div>
+          <div class="lbl" style="margin-bottom:2mm;">Note</div>
+          <div class="field" style="height: 35mm;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>SG SOLARGARDA SRL</div>
+      <div><span id="pv-num-foot"></span></div>
+    </div>
+  </div>
+</div>
+<div class="page-hint">Suggerimento iPhone: Condividi → Stampa → zoom sull’anteprima → Condividi → Salva su File (PDF).</div>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+
+  // Inputs
+  const luogo = $('luogo');
+  const data = $('data');
+  const num = $('num');
+  const commessa = $('commessa');
+  const operatore = $('operatore');
+  const ore = $('ore');
+  const attivita = $('attivita');
+  const materiali = $('materiali');
+  const logo = $('logo');
+
+  // Preview fields
+  const pvBrand = $('pv-brand');
+  const pvLuogo = $('pv-luogo');
+  const pvData = $('pv-data');
+  const pvNum = $('pv-num');
+  const pvCommessa = $('pv-commessa');
+  const pvOperatore = $('pv-operatore');
+  const pvAttivita = $('pv-attivita');
+  const pvMatTable = $('pv-mat-table').querySelector('tbody');
+  const pvFirma = $('pv-firma');
+  const pvNumFoot = $('pv-num-foot');
+  const pvLogoBox = $('pv-logo');
+
+  // Default (oggi) e brand fisso
+  pvBrand.textContent = 'SG SOLARGARDA SRL';
+  const todayISO = new Date().toISOString().slice(0,10);
+  data.value = todayISO;
+
+  // Signature pad — robusto per desktop + mobile + retina
+  const pad = $('pad');
+  const ctx = pad.getContext('2d');
+  let drawing = false, prev = null;
+
+  function resizeCanvas() {
+    const rect = pad.getBoundingClientRect();
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    pad.width = Math.floor(rect.width * ratio);
+    pad.height = Math.floor(rect.height * ratio);
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(ratio, ratio);
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#0f172a';
+  }
+  new ResizeObserver(resizeCanvas).observe(pad);
+  window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 300));
+  resizeCanvas();
+
+  function pointerPos(e){
+    const r = pad.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: (t.clientX - r.left), y: (t.clientY - r.top) };
+  }
+  function start(e){ drawing = true; prev = pointerPos(e); e.preventDefault(); }
+  function move(e){
+    if(!drawing) return;
+    const p = pointerPos(e);
+    ctx.beginPath();
+    ctx.moveTo(prev.x, prev.y);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    prev = p;
+    e.preventDefault();
+    updatePreview();
+  }
+  function end(){ drawing = false; prev = null; updatePreview(); }
+
+  // Mouse
+  pad.addEventListener('mousedown', start);
+  pad.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', end);
+  // Touch
+  pad.addEventListener('touchstart', start, {passive:false});
+  pad.addEventListener('touchmove', move, {passive:false});
+  pad.addEventListener('touchend', end);
+
+  $('clearSig').onclick = () => {
+    const r = pad.getBoundingClientRect();
+    ctx.clearRect(0,0,r.width,r.height);
+    updatePreview();
+  };
+
+  // Logo upload
+  logo.addEventListener('change', () => {
+    const file = logo.files[0];
+    if(!file) { pvLogoBox.innerHTML = '<span>LOGO</span>'; return; }
+    const img = document.createElement('img');
+    img.onload = () => { pvLogoBox.innerHTML = ''; pvLogoBox.appendChild(img); };
+    img.src = URL.createObjectURL(file);
+  });
+
+  // Materiali: parsing "descr | qty | um"
+  function parseMateriali(text) {
+    const rows = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    return rows.map(l => {
+      const parts = l.split('|').map(s => s.trim());
+      return { descr: parts[0] || '', qty: parts[1] || '', um: parts[2] || '' };
+    });
+  }
+
+  // Aggiorna anteprima
+  function updatePreview() {
+    pvLuogo.textContent = luogo.value || 'Luogo';
+    pvData.textContent = (data.value ? data.value.split('-').reverse().join('/') : 'Data');
+    pvNum.textContent = num.value || '—';
+    pvNumFoot.textContent = num.value ? ('Rapportino n. ' + num.value) : '';
+    pvCommessa.textContent = commessa.value || '—';
+    pvOperatore.textContent = (operatore.value + (ore.value ? (' — ' + ore.value + ' h') : '')).trim() || '—';
+    pvAttivita.textContent = attivita.value || '';
+
+    const items = parseMateriali(materiali.value);
+    pvMatTable.innerHTML = '';
+    const minRows = Math.max(5, items.length);
+    for (let i=0; i<minRows; i++){
+      const row = items[i] || {descr:'', qty:'', um:''};
+      const tr = document.createElement('tr');
+      const td1 = document.createElement('td'); td1.textContent = row.descr; td1.style.height = '10mm';
+      const td2 = document.createElement('td'); td2.textContent = row.qty;
+      const td3 = document.createElement('td'); td3.textContent = row.um;
+      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+      pvMatTable.appendChild(tr);
+    }
+
+    try { pvFirma.src = pad.toDataURL('image/png'); } catch(err) {}
+  }
+
+  [luogo, data, num, commessa, operatore, ore, attivita, materiali].forEach(el=>{
+    el.addEventListener('input', updatePreview);
+  });
+
+  $('salva').onclick = () => {
+    const payload = {
+      luogo: luogo.value, data: data.value, num: num.value,
+      commessa: commessa.value, operatore: operatore.value, ore: ore.value,
+      attivita: attivita.value, materiali: materiali.value,
+      firma: pad.toDataURL('image/png')
+    };
+    localStorage.setItem('sg_solargarda_rapportino', JSON.stringify(payload));
+    alert('Dati salvati su questo dispositivo.');
+  };
+  $('ripristina').onclick = () => {
+    const raw = localStorage.getItem('sg_solargarda_rapportino');
+    if(!raw) { alert('Nessun dato salvato.'); return; }
+    const d = JSON.parse(raw);
+    luogo.value = d.luogo || '';
+    data.value = d.data || todayISO;
+    num.value = d.num || '';
+    commessa.value = d.commessa || '';
+    operatore.value = d.operatore || '';
+    ore.value = d.ore || '';
+    attivita.value = d.attivita || '';
+    materiali.value = d.materiali || '';
+    const img = new Image();
+    img.onload = () => {
+      const r = pad.getBoundingClientRect();
+      ctx.clearRect(0,0,r.width,r.height);
+      // Disegno la vecchia firma adattandola al riquadro visuale
+      ctx.drawImage(img, 0, 0, r.width, r.height);
+      updatePreview();
+    };
+    if (d.firma) img.src = d.firma; else updatePreview();
+  };
+  $('reset').onclick = () => {
+    if(!confirm('Sicuro di voler svuotare tutti i campi?')) return;
+    [luogo, num, commessa, operatore, ore, attivita, materiali].forEach(el=>el.value='');
+    data.value = todayISO;
+    const r = pad.getBoundingClientRect(); ctx.clearRect(0,0,r.width,r.height);
+    pvLogoBox.innerHTML = '<span>LOGO</span>';
+    logo.value = '';
+    updatePreview();
+  };
+
+  $('stampa').onclick = () => { updatePreview(); window.print(); };
+
+  // init
+  updatePreview();
+})();
+</script>
+</body>
+</html>
