@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SG SOLARGARDA SRL – Sicurezza Cantiere</title>
+<style>
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f6f7fb;color:#0f172a}
+  .app{display:grid;grid-template-columns:420px 1fr;gap:18px;padding:18px}
+  .panel{background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px}
+  .panel h2{margin:0 0 12px;font-size:18px}
+  .grid{display:grid;gap:10px}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  label{font-size:12px;color:#475569;display:block;margin-bottom:4px}
+  input,textarea{width:100%;box-sizing:border-box;border:1px solid #ccc;border-radius:8px;padding:8px}
+  textarea{resize:vertical;min-height:60px}
+  button{border:1px solid #0f172a;background:#0f172a;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
+  .sheet{width:210mm;min-height:297mm;background:#fff;margin:0 auto;border:1px solid #ddd;position:relative}
+  .sheet-inner{padding:10mm}
+  .header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #0f172a;padding-bottom:6mm;margin-bottom:6mm}
+  .brand-name{font-weight:900;font-size:20pt}
+  .brand-sub{font-size:10pt;color:#475569}
+  .logo-box{width:22mm;height:22mm;border:1px dashed #aaa;display:grid;place-items:center;font-size:9px;color:#94a3b8}
+  table{width:100%;border-collapse:collapse;font-size:11pt;margin-top:3mm}
+  th,td{border:1px solid #0f172a;padding:4px}
+  th{background:#f0f0f0;text-align:left}
+  .field{border:1px solid #0f172a;border-radius:4px;padding:3mm;margin-top:3mm}
+  .field .val{min-height:35mm;white-space:pre-wrap}
+  .signature-box{border:1px solid #0f172a;height:35mm;margin-top:6mm;display:grid;place-items:center}
+  .footer{position:absolute;bottom:0;left:0;right:0;border-top:1px solid #0f172a;padding:6px;font-size:10pt;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="panel">
+    <h2>Dati Sicurezza</h2>
+    <div class="grid">
+      <div class="row-2">
+        <div><label>Luogo</label><input type="text" id="luogo"></div>
+        <div><label>Data</label><input type="date" id="data"></div>
+      </div>
+      <div><label>Committente</label><input type="text" id="committente"></div>
+      <div><label>Presenti (una riga: Nome Cognome | Titolo)</label><textarea id="presenti"></textarea></div>
+      <div><label>Checklist sicurezza</label>
+        <div>
+          <label><input type="checkbox" id="pos"> POS</label><br>
+          <label><input type="checkbox" id="psc"> PSC</label><br>
+          <label><input type="checkbox" id="cassetta"> Cassetta medica</label><br>
+          <label><input type="checkbox" id="cartello_cantiere"> Cartello di cantiere</label><br>
+          <label><input type="checkbox" id="cartello_simboli"> Cartello simboli</label><br>
+          <label><input type="checkbox" id="quadro"> Quadro di cantiere</label><br>
+          <label><input type="checkbox" id="conformita_quadro"> Conformità quadro di cantiere</label><br>
+          <label><input type="checkbox" id="pos_subapp"> POS subappaltatori</label>
+        </div>
+      </div>
+      <div><label>Note</label><textarea id="note"></textarea></div>
+      <div><label>Firma</label><canvas id="pad" style="width:100%;height:120px;border:1px solid #ccc"></canvas></div>
+      <button id="stampa">Stampa / PDF</button>
+    </div>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="sheet-inner">
+      <div class="header">
+        <div>
+          <div class="brand-name">SICUREZZA CANTIERE</div>
+          <div class="brand-sub">Luogo: <span id="pv-luogo"></span> — Data: <span id="pv-data"></span> — Committente: <span id="pv-committente"></span></div>
+        </div>
+        <div class="logo-box" id="pv-logo">LOGO</div>
+      </div>
+      <div class="section-title">Presenti</div>
+      <table id="pv-presenti"><thead><tr><th>Nome</th><th>Titolo</th></tr></thead><tbody></tbody></table>
+      <div class="section-title">Checklist sicurezza</div>
+      <table>
+        <tbody>
+          <tr><td>POS</td><td id="pv-pos"></td></tr>
+          <tr><td>PSC</td><td id="pv-psc"></td></tr>
+          <tr><td>Cassetta medica</td><td id="pv-cassetta"></td></tr>
+          <tr><td>Cartello di cantiere</td><td id="pv-cartello_cantiere"></td></tr>
+          <tr><td>Cartello simboli</td><td id="pv-cartello_simboli"></td></tr>
+          <tr><td>Quadro di cantiere</td><td id="pv-quadro"></td></tr>
+          <tr><td>Conformità quadro di cantiere</td><td id="pv-conformita_quadro"></td></tr>
+          <tr><td>POS subappaltatori</td><td id="pv-pos_subapp"></td></tr>
+        </tbody>
+      </table>
+      <div class="section-title">Note</div>
+      <div class="field"><div class="val" id="pv-note"></div></div>
+      <div class="section-title">Firma</div>
+      <div class="signature-box"><img id="pv-firma"></div>
+    </div>
+    <div class="footer">SG SOLARGARDA SRL — Via d’Annunzio 9 Castelnuovo del Garda, Verona — info@solargarda.it</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const luogo=$("luogo"),data=$("data"),committente=$("committente"),presenti=$("presenti"),note=$("note");
+  const pvLuogo=$("pv-luogo"),pvData=$("pv-data"),pvCommittente=$("pv-committente"),pvPresenti=$("pv-presenti").querySelector("tbody"),pvNote=$("pv-note");
+  const checks=["pos","psc","cassetta","cartello_cantiere","cartello_simboli","quadro","conformita_quadro","pos_subapp"];
+  const pad=$("pad"),ctx=pad.getContext("2d");let drawing=false,prev=null;
+  function resize(){const r=pad.getBoundingClientRect();pad.width=r.width;pad.height=r.height;}resize();
+  function posEvt(e){const r=pad.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+  pad.addEventListener("mousedown",e=>{drawing=true;prev=posEvt(e)});
+  pad.addEventListener("mousemove",e=>{if(!drawing)return;const p=posEvt(e);ctx.beginPath();ctx.moveTo(prev.x,prev.y);ctx.lineTo(p.x,p.y);ctx.stroke();prev=p;update();});
+  window.addEventListener("mouseup",()=>{drawing=false;update();});
+  function update(){
+    pvLuogo.textContent=luogo.value;pvData.textContent=data.value;pvCommittente.textContent=committente.value;
+    pvNote.textContent=note.value;
+    pvPresenti.innerHTML="";presenti.value.split(/\n/).filter(Boolean).forEach(l=>{const p=l.split("|");const tr=document.createElement("tr");tr.innerHTML=`<td>${p[0]||""}</td><td>${p[1]||""}</td>`;pvPresenti.appendChild(tr);});
+    checks.forEach(c=>{document.getElementById("pv-"+c).textContent=$(c).checked?"✓":"—";});
+    $("pv-firma").src=pad.toDataURL();
+  }
+  [luogo,data,committente,presenti,note].forEach(el=>el.addEventListener("input",update));
+  checks.forEach(c=>$(c).addEventListener("change",update));
+  $("stampa").onclick=()=>{update();window.print();};
+  update();
+})();</script>
+</body>
+</html>
