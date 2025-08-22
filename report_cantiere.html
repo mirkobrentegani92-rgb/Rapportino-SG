@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SG SOLARGARDA SRL – Report di Cantiere</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --a4-w:210mm; --a4-h:297mm; --pad:10mm;
+    --fg:#0f172a; --muted:#475569; --line:#0f172a; --bg:#f6f7fb;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,Helvetica,sans-serif;
+  }
+  html,body{height:100%;background:var(--bg)}
+  body{margin:0;font-family:var(--font);color:var(--fg)}
+  .app{display:grid;grid-template-columns:420px 1fr;gap:18px;padding:18px}
+  .panel{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;position:sticky;top:18px;box-shadow:0 2px 6px rgba(15,23,42,.05)}
+  .panel h2{margin:0 0 12px;font-size:18px}
+  .grid{display:grid;gap:10px}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+  input,textarea{width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;font-size:14px;background:#fff}
+  textarea{resize:vertical;min-height:80px}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  button{appearance:none;border:1px solid #0f172a;background:#0f172a;color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  .btn-secondary{background:#fff;color:#0f172a;border-color:#cbd5e1}
+
+  .sheet{width:var(--a4-w);min-height:var(--a4-h);background:#fff;margin:0 auto;border:1px solid #e5e7eb;box-shadow:0 2px 6px rgba(15,23,42,.05);position:relative}
+  .sheet-inner{padding:var(--pad)}
+  .header{text-align:center;border-bottom:2px solid var(--line);padding-bottom:6mm;margin-bottom:6mm}
+  .brand-name{font-weight:900;letter-spacing:.6px;font-size:20pt}
+  .brand-sub{color:var(--muted);font-size:10pt}
+  .logo-box{width:34mm;height:34mm;border:1px dashed #cbd5e1;display:grid;place-items:center;font-size:10px;color:#94a3b8;overflow:hidden;position:absolute;top:10mm;right:10mm}
+  .logo-box img{max-width:100%;max-height:100%;object-fit:contain}
+
+  .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin-bottom:6mm}
+  .field{border:1px solid var(--line);padding:3mm;min-height:12mm;border-radius:4px}
+  .field .lbl{font-size:9pt;color:var(--muted);margin-bottom:1mm}
+  .field .val{font-size:11pt;font-weight:600;min-height:6mm;white-space:pre-wrap}
+
+  table.table{width:100%;border-collapse:collapse;margin-top:3mm;font-size:10.5pt}
+  .table th,.table td{border:1px solid var(--line);padding:2.5mm}
+  .table th{text-align:left;background:#f8fafc}
+
+  .section-title{margin-top:4mm;margin-bottom:2mm;font-weight:800;font-size:11pt;letter-spacing:.2px}
+  .sign-row{margin-top:10mm}
+  .signature-box{border:1px solid var(--line);height:35mm;position:relative;display:grid;place-items:center;border-radius:4px}
+  .signature-box .hint{position:absolute;top:4px;left:6px;font-size:9pt;color:var(--muted)}
+  .signature-box img{max-width:100%;max-height:100%;object-fit:contain}
+
+  .footer{position:absolute;left:0;right:0;bottom:0;border-top:1.5px solid var(--line);padding:4mm var(--pad);font-size:9.5pt;color:var(--fg);display:flex;justify-content:space-between;align-items:center}
+  .footer .contact{line-height:1.35}
+
+  @media (max-width:980px){.app{grid-template-columns:1fr}.panel{position:static;order:2}.sheet{order:1}}
+  @page{size:A4;margin:10mm}
+  @media print{body{background:#fff}.panel,.page-hint{display:none !important}.app{display:block;padding:0}.sheet{border:none;box-shadow:none;margin:0}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="panel">
+    <h2>Dati Report di Cantiere</h2>
+    <div class="grid">
+      <div class="row-2">
+        <div><label>Luogo</label><input type="text" id="luogo"/></div>
+        <div><label>Data</label><input type="date" id="data"/></div>
+      </div>
+      <div><label>Committente</label><input type="text" id="committente"/></div>
+      <div><label>Presenti in cantiere (nome | titolo, una riga per persona)</label><textarea id="presenti"></textarea></div>
+      <div><label>Attività svolte</label><textarea id="attivita"></textarea></div>
+      <div>
+        <label>Firma</label>
+        <canvas id="pad" style="width:100%;height:180px;border:1px solid #d1d5db;border-radius:10px;background:#fff;touch-action:none;"></canvas>
+        <div class="btns"><button type="button" class="btn-secondary" id="clearSig">Pulisci firma</button></div>
+      </div>
+      <div class="btns">
+        <button type="button" id="stampa">Stampa / PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="sheet-inner">
+      <div class="header">
+        <div class="brand-name">REPORT DI CANTIERE</div>
+        <div class="brand-sub">Luogo: <span id="pv-luogo"></span> — Data: <span id="pv-data"></span> — Committente: <span id="pv-committente"></span></div>
+        <div class="logo-box" id="pv-logo"><span>LOGO</span></div>
+      </div>
+
+      <div class="section-title">Presenti in cantiere</div>
+      <table class="table" id="pv-presenti"><thead><tr><th>Nome Cognome</th><th>Titolo</th></tr></thead><tbody></tbody></table>
+
+      <div class="section-title">Attività</div>
+      <div class="field" style="height:60mm;"><div class="val" id="pv-attivita"></div></div>
+
+      <div class="sign-row">
+        <div class="lbl">Firma</div>
+        <div class="signature-box"><span class="hint">Firma qui</span><img id="pv-firma"/></div>
+      </div>
+    </div>
+    <div class="footer"><div class="contact">
+      SG SOLARGARDA SRL<br>
+      Via d’Annunzio 9, Castelnuovo del Garda, Verona, Italy<br>
+      info@solargarda.it
+    </div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const luogo=$('luogo'),data=$('data'),committente=$('committente'),presenti=$('presenti'),attivita=$('attivita');
+  const pvLuogo=$('pv-luogo'),pvData=$('pv-data'),pvCommittente=$('pv-committente'),pvPresenti=$('pv-presenti').querySelector('tbody'),pvAttivita=$('pv-attivita'),pvFirma=$('pv-firma'),pvLogo=$('pv-logo');
+
+  const todayISO=new Date().toISOString().slice(0,10); data.value=todayISO;
+
+  const pad=$('pad'),ctx=pad.getContext('2d');let drawing=false,prev=null;
+  function resizeCanvas(){const r=pad.getBoundingClientRect();const ratio=Math.max(window.devicePixelRatio||1,1);pad.width=r.width*ratio;pad.height=r.height*ratio;ctx.setTransform(1,0,0,1,0,0);ctx.scale(ratio,ratio);ctx.lineWidth=2;ctx.lineCap='round';ctx.strokeStyle='#0f172a';}
+  new ResizeObserver(resizeCanvas).observe(pad);resizeCanvas();
+  function pos(e){const r=pad.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return {x:t.clientX-r.left,y:t.clientY-r.top};}
+  function start(e){drawing=true;prev=pos(e);e.preventDefault();}
+  function move(e){if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(prev.x,prev.y);ctx.lineTo(p.x,p.y);ctx.stroke();prev=p;e.preventDefault();updatePreview();}
+  function end(){drawing=false;prev=null;updatePreview();}
+  pad.addEventListener('mousedown',start);pad.addEventListener('mousemove',move);window.addEventListener('mouseup',end);
+  pad.addEventListener('touchstart',start,{passive:false});pad.addEventListener('touchmove',move,{passive:false});pad.addEventListener('touchend',end);
+  $('clearSig').onclick=()=>{const r=pad.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);updatePreview();};
+
+  function updatePreview(){
+    pvLuogo.textContent=luogo.value||'';
+    pvData.textContent=data.value?data.value.split('-').reverse().join('/'):'Data';
+    pvCommittente.textContent=committente.value||'';
+    pvAttivita.textContent=attivita.value||'';
+    // Presenti
+    const rows=presenti.value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>l.split('|'));
+    pvPresenti.innerHTML='';
+    for(let i=0;i<Math.max(6,rows.length);i++){
+      const r=rows[i]||['',''];
+      pvPresenti.innerHTML+=`<tr><td>${r[0]||''}</td><td>${r[1]||''}</td></tr>`;
+    }
+    try{pvFirma.src=pad.toDataURL();}catch(e){}
+  }
+  [luogo,data,committente,presenti,attivita].forEach(el=>el.addEventListener('input',updatePreview));
+  $('stampa').onclick=()=>{updatePreview();window.print();};
+  updatePreview();
+})();</script>
+</body>
+</html>
