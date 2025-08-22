@@ -31,15 +31,17 @@
   .brand-name{font-weight:900;letter-spacing:.6px;font-size:18pt}
   .brand-sub{color:var(--muted);font-size:10pt}
   .logo-box{width:24mm;height:24mm;border:1px dashed #cbd5e1;display:grid;place-items:center;font-size:10px;color:#94a3b8;overflow:hidden;border-radius:4px}
-  .logo-box img{max-width:100%;max-height:100%;object-fit:contain}
+  .logo-box img{max-width:100%;max-height:100%;object-fit:contain;display:block}
 
   table{width:100%;border-collapse:collapse;margin-top:3mm;font-size:10.5pt}
   th,td{border:1px solid var(--line);padding:2.5mm}
   th{background:#f8fafc;text-align:left}
   .section-title{margin-top:4mm;margin-bottom:2mm;font-weight:800;font-size:11pt;letter-spacing:.2px}
-  .signature-box{border:1px solid var(--line);height:35mm;display:grid;place-items:center;border-radius:4px;margin-top:6mm;position:relative}
+
+  .signature-box{border:1px solid var(--line);height:28mm;display:grid;place-items:center;border-radius:4px;margin-top:6mm;position:relative;overflow:hidden}
   .signature-box .hint{position:absolute;top:4px;left:6px;font-size:9pt;color:#64748b}
-  .signature-box img{max-width:100%;max-height:100%;object-fit:contain}
+  .signature-box img{width:100%;height:100%;object-fit:contain;display:block}
+
   .footer{position:absolute;left:0;right:0;bottom:0;border-top:1.5px solid var(--line);padding:4mm var(--pad);font-size:9.5pt;color:var(--fg);display:flex;justify-content:space-between;align-items:center}
   .footer .contact{line-height:1.35}
 
@@ -168,6 +170,7 @@
   };
   function renderRows(){
     pvTable.innerHTML='';
+    // mostra almeno 5 righe per avere spazio firma e coerenza visiva
     for(let i=0;i<Math.max(5,rows.length);i++){
       const r=rows[i]||{articolo:'',um:'',qty:''};
       const tr=document.createElement('tr');
@@ -188,7 +191,15 @@
   [tipo,data,commessa,operatore,note].forEach(el=>el.addEventListener('input',updatePreview));
 
   // Stampa
-  $('stampa').onclick=()=>{ updatePreview(); window.print(); rows=[]; renderRows(); };
+  $('stampa').onclick=()=>{
+    updatePreview(); // aggiorna anteprima
+    window.print();  // apre dialogo di stampa
+  };
+
+  // Dopo la stampa (evita che svuoti le righe prima che iPhone catturi l'anteprima)
+  window.addEventListener('afterprint', ()=>{
+    rows=[]; renderRows(); updatePreview();
+  });
 
   // Init
   renderRows(); updatePreview();
