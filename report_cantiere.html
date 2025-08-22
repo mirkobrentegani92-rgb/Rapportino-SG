@@ -21,22 +21,18 @@
   label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
   input,textarea{width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;font-size:14px;background:#fff}
   textarea{resize:vertical;min-height:80px}
+  .hint{color:#64748b;font-size:12px}
   .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
   button{appearance:none;border:1px solid #0f172a;background:#0f172a;color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
   .btn-secondary{background:#fff;color:#0f172a;border-color:#cbd5e1}
 
   .sheet{width:var(--a4-w);min-height:var(--a4-h);background:#fff;margin:0 auto;border:1px solid #e5e7eb;box-shadow:0 2px 6px rgba(15,23,42,.05);position:relative}
   .sheet-inner{padding:var(--pad)}
-  .header{text-align:center;border-bottom:2px solid var(--line);padding-bottom:6mm;margin-bottom:6mm}
+  .header{text-align:center;border-bottom:2px solid var(--line);padding-bottom:6mm;margin-bottom:6mm;position:relative}
   .brand-name{font-weight:900;letter-spacing:.6px;font-size:20pt}
   .brand-sub{color:var(--muted);font-size:10pt}
-  .logo-box{width:34mm;height:34mm;border:1px dashed #cbd5e1;display:grid;place-items:center;font-size:10px;color:#94a3b8;overflow:hidden;position:absolute;top:10mm;right:10mm}
+  .logo-box{width:34mm;height:34mm;border:1px dashed #cbd5e1;display:grid;place-items:center;font-size:10px;color:#94a3b8;overflow:hidden;position:absolute;top:0;right:0}
   .logo-box img{max-width:100%;max-height:100%;object-fit:contain}
-
-  .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin-bottom:6mm}
-  .field{border:1px solid var(--line);padding:3mm;min-height:12mm;border-radius:4px}
-  .field .lbl{font-size:9pt;color:var(--muted);margin-bottom:1mm}
-  .field .val{font-size:11pt;font-weight:600;min-height:6mm;white-space:pre-wrap}
 
   table.table{width:100%;border-collapse:collapse;margin-top:3mm;font-size:10.5pt}
   .table th,.table td{border:1px solid var(--line);padding:2.5mm}
@@ -66,12 +62,23 @@
         <div><label>Data</label><input type="date" id="data"/></div>
       </div>
       <div><label>Committente</label><input type="text" id="committente"/></div>
-      <div><label>Presenti in cantiere (nome | titolo, una riga per persona)</label><textarea id="presenti"></textarea></div>
-      <div><label>Attività svolte</label><textarea id="attivita"></textarea></div>
       <div>
-        <label>Firma</label>
-        <canvas id="pad" style="width:100%;height:180px;border:1px solid #d1d5db;border-radius:10px;background:#fff;touch-action:none;"></canvas>
-        <div class="btns"><button type="button" class="btn-secondary" id="clearSig">Pulisci firma</button></div>
+        <label>Presenti (una persona per riga: NOME COGNOME | TITOLO)</label>
+        <textarea id="presenti" placeholder="Mario Rossi | Capocantiere&#10;Luca Bianchi | Operaio specializzato"></textarea>
+        <div class="hint">Saranno mostrate 6 righe (minimo); puoi inserirne di più.</div>
+      </div>
+      <div><label>Attività svolte</label><textarea id="attivita" placeholder="Descrizione delle attività svolte..."></textarea></div>
+      <div class="row-2">
+        <div>
+          <label>Firma</label>
+          <canvas id="pad" style="width:100%;height:180px;border:1px solid #d1d5db;border-radius:10px;background:#fff;touch-action:none;"></canvas>
+          <div class="btns"><button type="button" class="btn-secondary" id="clearSig">Pulisci firma</button></div>
+        </div>
+        <div>
+          <label>Logo aziendale (opzionale)</label>
+          <input type="file" id="logo" accept="image/*"/>
+          <div class="hint">Verrà mostrato in alto a destra.</div>
+        </div>
       </div>
       <div class="btns">
         <button type="button" id="stampa">Stampa / PDF</button>
@@ -83,12 +90,19 @@
     <div class="sheet-inner">
       <div class="header">
         <div class="brand-name">REPORT DI CANTIERE</div>
-        <div class="brand-sub">Luogo: <span id="pv-luogo"></span> — Data: <span id="pv-data"></span> — Committente: <span id="pv-committente"></span></div>
+        <div class="brand-sub">
+          Luogo: <span id="pv-luogo"></span> — 
+          Data: <span id="pv-data"></span> — 
+          Committente: <span id="pv-committente"></span>
+        </div>
         <div class="logo-box" id="pv-logo"><span>LOGO</span></div>
       </div>
 
       <div class="section-title">Presenti in cantiere</div>
-      <table class="table" id="pv-presenti"><thead><tr><th>Nome Cognome</th><th>Titolo</th></tr></thead><tbody></tbody></table>
+      <table class="table" id="pv-presenti">
+        <thead><tr><th>Nome Cognome</th><th>Titolo</th></tr></thead>
+        <tbody></tbody>
+      </table>
 
       <div class="section-title">Attività</div>
       <div class="field" style="height:60mm;"><div class="val" id="pv-attivita"></div></div>
@@ -109,11 +123,14 @@
 <script>
 (function(){
   const $=id=>document.getElementById(id);
-  const luogo=$('luogo'),data=$('data'),committente=$('committente'),presenti=$('presenti'),attivita=$('attivita');
-  const pvLuogo=$('pv-luogo'),pvData=$('pv-data'),pvCommittente=$('pv-committente'),pvPresenti=$('pv-presenti').querySelector('tbody'),pvAttivita=$('pv-attivita'),pvFirma=$('pv-firma'),pvLogo=$('pv-logo');
+  const luogo=$('luogo'),data=$('data'),committente=$('committente'),presenti=$('presenti'),attivita=$('attivita'),logo=$('logo');
+  const pvLuogo=$('pv-luogo'),pvData=$('pv-data'),pvCommittente=$('pv-committente'),
+        pvPresenti=$('pv-presenti').querySelector('tbody'),pvAttivita=$('pv-attivita'),
+        pvFirma=$('pv-firma'),pvLogo=$('pv-logo');
 
   const todayISO=new Date().toISOString().slice(0,10); data.value=todayISO;
 
+  // Signature pad
   const pad=$('pad'),ctx=pad.getContext('2d');let drawing=false,prev=null;
   function resizeCanvas(){const r=pad.getBoundingClientRect();const ratio=Math.max(window.devicePixelRatio||1,1);pad.width=r.width*ratio;pad.height=r.height*ratio;ctx.setTransform(1,0,0,1,0,0);ctx.scale(ratio,ratio);ctx.lineWidth=2;ctx.lineCap='round';ctx.strokeStyle='#0f172a';}
   new ResizeObserver(resizeCanvas).observe(pad);resizeCanvas();
@@ -125,22 +142,37 @@
   pad.addEventListener('touchstart',start,{passive:false});pad.addEventListener('touchmove',move,{passive:false});pad.addEventListener('touchend',end);
   $('clearSig').onclick=()=>{const r=pad.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);updatePreview();};
 
+  // Logo upload -> preview
+  logo.addEventListener('change',()=>{
+    const file=logo.files[0];
+    if(!file){ pvLogo.innerHTML='<span>LOGO</span>'; return; }
+    const img=new Image();
+    img.onload=()=>{ pvLogo.innerHTML=''; pvLogo.appendChild(img); };
+    img.src=URL.createObjectURL(file);
+  });
+
   function updatePreview(){
     pvLuogo.textContent=luogo.value||'';
     pvData.textContent=data.value?data.value.split('-').reverse().join('/'):'Data';
     pvCommittente.textContent=committente.value||'';
     pvAttivita.textContent=attivita.value||'';
-    // Presenti
+
+    // Presenti (min 6 righe)
     const rows=presenti.value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>l.split('|'));
     pvPresenti.innerHTML='';
-    for(let i=0;i<Math.max(6,rows.length);i++){
+    const n=Math.max(6,rows.length);
+    for(let i=0;i<n;i++){
       const r=rows[i]||['',''];
-      pvPresenti.innerHTML+=`<tr><td>${r[0]||''}</td><td>${r[1]||''}</td></tr>`;
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td>'+ (r[0]||'') +'</td><td>'+ (r[1]||'') +'</td>';
+      pvPresenti.appendChild(tr);
     }
-    try{pvFirma.src=pad.toDataURL();}catch(e){}
+
+    try{ pvFirma.src=pad.toDataURL('image/png'); }catch(e){}
   }
+
   [luogo,data,committente,presenti,attivita].forEach(el=>el.addEventListener('input',updatePreview));
-  $('stampa').onclick=()=>{updatePreview();window.print();};
+  $('stampa').onclick=()=>{ updatePreview(); window.print(); };
   updatePreview();
 })();</script>
 </body>
