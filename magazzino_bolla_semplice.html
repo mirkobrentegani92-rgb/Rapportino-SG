@@ -38,7 +38,7 @@
   th{background:#f8fafc;text-align:left}
   .section-title{margin-top:4mm;margin-bottom:2mm;font-weight:800;font-size:11pt;letter-spacing:.2px}
 
-  .signature-box{border:1px solid var(--line);height:28mm;display:grid;place-items:center;border-radius:4px;margin-top:6mm;position:relative;overflow:hidden}
+  .signature-box{border:1px solid var(--line);height:24mm;display:grid;place-items:center;border-radius:4px;margin-top:6mm;position:relative;overflow:hidden}
   .signature-box .hint{position:absolute;top:4px;left:6px;font-size:9pt;color:#64748b}
   .signature-box img{width:100%;height:100%;object-fit:contain;display:block}
 
@@ -85,7 +85,7 @@
       <div class="row-2">
         <div>
           <label>Firma</label>
-          <canvas id="pad" style="width:100%;height:160px;border:1px solid #d1d5db;border-radius:10px;background:#fff;touch-action:none;"></canvas>
+          <canvas id="pad" style="width:100%;height:120px;border:1px solid #d1d5db;border-radius:10px;background:#fff;touch-action:none;"></canvas>
           <div class="btns"><button type="button" class="btn-secondary" id="clearSig">Pulisci firma</button></div>
         </div>
         <div>
@@ -121,7 +121,7 @@
       <table><tbody><tr><td id="pv-note" style="height:30mm;"></td></tr></tbody></table>
 
       <div class="section-title">Firma consegna / ritiro</div>
-      <div class="signature-box"><span class="hint">Firma qui</span><img id="pv-firma" alt="Firma"/></div>
+      <div class="signature-box"><span class="hint" id="hint-firma">Firma qui</span><img id="pv-firma" alt="Firma"/></div>
     </div>
     <div class="footer"><div class="contact">
       SG SOLARGARDA SRL — Via d’Annunzio 9, Castelnuovo del Garda, Verona, Italy — info@solargarda.it
@@ -135,22 +135,45 @@
   const tipo=$('tipo'), data=$('data'), commessa=$('commessa'), operatore=$('operatore'), note=$('note');
   const articolo=$('articolo'), um=$('um'), qty=$('qty'), add=$('add'), logo=$('logo');
   const pvTipo=$('pv-tipo'), pvData=$('pv-data'), pvCommessa=$('pv-commessa'), pvOperatore=$('pv-operatore'), pvTable=$('pv-table').querySelector('tbody'), pvNote=$('pv-note');
-  const pvLogo=$('pv-logo');
+  const pvLogo=$('pv-logo'), pvFirma=$('pv-firma'), hintFirma=$('hint-firma');
   const todayISO=new Date().toISOString().slice(0,10); data.value=todayISO;
 
-  // Firma
+  // Firma – canvas ad alta definizione e export ridimensionato per non "esplodere" nel box
   const pad=$('pad'), ctx=pad.getContext('2d'); let drawing=false, prev=null;
   function resize(){const r=pad.getBoundingClientRect(); const ratio=Math.max(window.devicePixelRatio||1,1);
     pad.width=Math.floor(r.width*ratio); pad.height=Math.floor(r.height*ratio);
-    ctx.setTransform(1,0,0,1,0,0); ctx.scale(ratio,ratio); ctx.lineWidth=2; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#0f172a';}
+    ctx.setTransform(1,0,0,1,0,0); ctx.scale(ratio,ratio);
+    ctx.lineWidth=1.6; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#0f172a';
+  }
   new ResizeObserver(resize).observe(pad); resize();
   function pos(e){const r=pad.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:t.clientX-r.left,y:t.clientY-r.top};}
-  function start(e){drawing=true; prev=pos(e); e.preventDefault();}
+  function start(e){drawing=true; prev=pos(e); e.preventDefault(); hintFirma.style.display='none';}
   function move(e){if(!drawing)return; const p=pos(e); ctx.beginPath(); ctx.moveTo(prev.x,prev.y); ctx.lineTo(p.x,p.y); ctx.stroke(); prev=p; e.preventDefault(); updatePreview();}
   function end(){drawing=false; prev=null; updatePreview();}
   pad.addEventListener('mousedown',start); pad.addEventListener('mousemove',move); window.addEventListener('mouseup',end);
   pad.addEventListener('touchstart',start,{passive:false}); pad.addEventListener('touchmove',move,{passive:false}); pad.addEventListener('touchend',end);
-  $('clearSig').onclick=()=>{const r=pad.getBoundingClientRect(); ctx.clearRect(0,0,r.width,r.height); updatePreview();};
+  $('clearSig').onclick=()=>{const r=pad.getBoundingClientRect(); ctx.clearRect(0,0,r.width,r.height); hintFirma.style.display='block'; updatePreview();};
+
+  function signatureDataURL(){
+    // Ridimensiono l'immagine della firma a una dimensione "comoda" per il box PDF
+    const targetW = 900, targetH = 300; // orizzontale
+    const off=document.createElement('canvas');
+    off.width=targetW; off.height=targetH;
+    const octx=off.getContext('2d');
+    octx.fillStyle='#ffffff'; octx.fillRect(0,0,targetW,targetH);
+    const img=new Image(); img.src=pad.toDataURL('image/png');
+    return new Promise(res=>{
+      img.onload=()=>{
+        const sw=img.width, sh=img.height;
+        const scale=Math.min(targetW/sw, targetH/sh);
+        const dw=sw*scale, dh=sh*scale;
+        const dx=(targetW-dw)/2, dy=(targetH-dh)/2;
+        octx.drawImage(img, dx, dy, dw, dh);
+        res(off.toDataURL('image/png'));
+      };
+      img.onerror=()=>res(pad.toDataURL('image/png'));
+    });
+  }
 
   // Logo upload
   logo.addEventListener('change',()=>{
@@ -170,7 +193,6 @@
   };
   function renderRows(){
     pvTable.innerHTML='';
-    // mostra almeno 5 righe per avere spazio firma e coerenza visiva
     for(let i=0;i<Math.max(5,rows.length);i++){
       const r=rows[i]||{articolo:'',um:'',qty:''};
       const tr=document.createElement('tr');
@@ -179,24 +201,26 @@
     }
   }
 
-  function updatePreview(){
+  async function updatePreview(){
     pvTipo.textContent = (tipo.value==='uscita'?'USCITA': tipo.value==='entrata'?'ENTRATA':'RESO');
     pvData.textContent = data.value?data.value.split('-').reverse().join('/'):'—';
     pvCommessa.textContent = commessa.value||'—';
     pvOperatore.textContent = operatore.value||'—';
     pvNote.textContent = note.value||'';
-    try{ document.getElementById('pv-firma').src = pad.toDataURL('image/png'); }catch(e){}
+    try{
+      const url = await signatureDataURL();
+      pvFirma.src = url;
+    }catch(e){ pvFirma.src = pad.toDataURL('image/png'); }
   }
 
   [tipo,data,commessa,operatore,note].forEach(el=>el.addEventListener('input',updatePreview));
 
   // Stampa
-  $('stampa').onclick=()=>{
-    updatePreview(); // aggiorna anteprima
-    window.print();  // apre dialogo di stampa
+  $('stampa').onclick=async()=>{
+    await updatePreview();
+    window.print();
   };
 
-  // Dopo la stampa (evita che svuoti le righe prima che iPhone catturi l'anteprima)
   window.addEventListener('afterprint', ()=>{
     rows=[]; renderRows(); updatePreview();
   });
