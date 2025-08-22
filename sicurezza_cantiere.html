@@ -4,30 +4,63 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SG SOLARGARDA SRL – Sicurezza Cantiere</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
 <style>
-  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f6f7fb;color:#0f172a}
+  :root{
+    --a4-w:210mm; --a4-h:297mm; --pad:10mm;
+    --fg:#0f172a; --muted:#475569; --line:#0f172a; --bg:#f6f7fb;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,Helvetica,sans-serif;
+  }
+  html,body{height:100%;background:var(--bg)}
+  body{margin:0;font-family:var(--font);color:var(--fg)}
   .app{display:grid;grid-template-columns:420px 1fr;gap:18px;padding:18px}
-  .panel{background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px}
+  .panel{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;position:sticky;top:18px;box-shadow:0 2px 6px rgba(15,23,42,.05)}
   .panel h2{margin:0 0 12px;font-size:18px}
   .grid{display:grid;gap:10px}
   .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  label{font-size:12px;color:#475569;display:block;margin-bottom:4px}
-  input,textarea{width:100%;box-sizing:border-box;border:1px solid #ccc;border-radius:8px;padding:8px}
-  textarea{resize:vertical;min-height:60px}
-  button{border:1px solid #0f172a;background:#0f172a;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
-  .sheet{width:210mm;min-height:297mm;background:#fff;margin:0 auto;border:1px solid #ddd;position:relative}
-  .sheet-inner{padding:10mm}
-  .header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #0f172a;padding-bottom:6mm;margin-bottom:6mm}
-  .brand-name{font-weight:900;font-size:20pt}
-  .brand-sub{font-size:10pt;color:#475569}
-  .logo-box{width:22mm;height:22mm;border:1px dashed #aaa;display:grid;place-items:center;font-size:9px;color:#94a3b8}
-  table{width:100%;border-collapse:collapse;font-size:11pt;margin-top:3mm}
-  th,td{border:1px solid #0f172a;padding:4px}
-  th{background:#f0f0f0;text-align:left}
-  .field{border:1px solid #0f172a;border-radius:4px;padding:3mm;margin-top:3mm}
-  .field .val{min-height:35mm;white-space:pre-wrap}
-  .signature-box{border:1px solid #0f172a;height:35mm;margin-top:6mm;display:grid;place-items:center}
-  .footer{position:absolute;bottom:0;left:0;right:0;border-top:1px solid #0f172a;padding:6px;font-size:10pt;text-align:center}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+  input,textarea{width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;font-size:14px;background:#fff}
+  textarea{resize:vertical;min-height:80px}
+  .hint{color:#64748b;font-size:12px}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  button{appearance:none;border:1px solid #0f172a;background:#0f172a;color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  .btn-secondary{background:#fff;color:#0f172a;border-color:#cbd5e1}
+
+  .sheet{width:var(--a4-w);min-height:var(--a4-h);background:#fff;margin:0 auto;border:1px solid #e5e7eb;box-shadow:0 2px 6px rgba(15,23,42,.05);position:relative}
+  .sheet-inner{padding:var(--pad)}
+
+  .header{display:grid;grid-template-columns:1fr auto;gap:8mm;align-items:center;border-bottom:2px solid var(--line);padding-bottom:6mm;margin-bottom:6mm}
+  .head-left{display:flex;flex-direction:column;gap:3mm}
+  .brand-name{font-weight:900;letter-spacing:.6px;font-size:20pt;text-align:left}
+  .brand-sub{color:var(--muted);font-size:10pt}
+  .logo-box{width:22mm;height:22mm;border:1px dashed #cbd5e1;display:grid;place-items:center;font-size:9px;color:#94a3b8;overflow:hidden;border-radius:4px}
+  .logo-box img{max-width:100%;max-height:100%;object-fit:contain}
+
+  table.table{width:100%;border-collapse:collapse;margin-top:3mm;font-size:10.5pt}
+  .table th,.table td{border:1px solid var(--line);padding:2.5mm}
+  .table th{text-align:left;background:#f8fafc}
+
+  .section-title{margin-top:4mm;margin-bottom:2mm;font-weight:800;font-size:11pt;letter-spacing:.2px}
+
+  .field{border:1px solid var(--line);padding:3mm;border-radius:4px;background:#fff}
+  .field .val{min-height:35mm;white-space:pre-wrap;font-size:11pt}
+
+  .sign-row{margin-top:8mm}
+  .signature-box{border:1px solid var(--line);height:35mm;position:relative;display:grid;place-items:center;border-radius:4px}
+  .signature-box .hint{position:absolute;top:4px;left:6px;font-size:9pt;color:#64748b}
+  .signature-box img{max-width:100%;max-height:100%;object-fit:contain}
+
+  .footer{position:absolute;left:0;right:0;bottom:0;border-top:1.5px solid var(--line);padding:4mm var(--pad);font-size:9.5pt;color:var(--fg);display:flex;justify-content:space-between;align-items:center}
+  .footer .contact{line-height:1.35}
+
+  @media (max-width:980px){.app{grid-template-columns:1fr}.panel{position:static;order:2}.sheet{order:1}}
+  @page{size:A4;margin:10mm}
+  @media print{
+    body{background:#fff}
+    .panel,.page-hint{display:none !important}
+    .app{display:block;padding:0}
+    .sheet{border:none;box-shadow:none;margin:0}
+  }
 </style>
 </head>
 <body>
@@ -36,42 +69,70 @@
     <h2>Dati Sicurezza</h2>
     <div class="grid">
       <div class="row-2">
-        <div><label>Luogo</label><input type="text" id="luogo"></div>
-        <div><label>Data</label><input type="date" id="data"></div>
+        <div><label>Luogo</label><input type="text" id="luogo"/></div>
+        <div><label>Data</label><input type="date" id="data"/></div>
       </div>
-      <div><label>Committente</label><input type="text" id="committente"></div>
-      <div><label>Presenti (una riga: Nome Cognome | Titolo)</label><textarea id="presenti"></textarea></div>
-      <div><label>Checklist sicurezza</label>
-        <div>
-          <label><input type="checkbox" id="pos"> POS</label><br>
-          <label><input type="checkbox" id="psc"> PSC</label><br>
-          <label><input type="checkbox" id="cassetta"> Cassetta medica</label><br>
-          <label><input type="checkbox" id="cartello_cantiere"> Cartello di cantiere</label><br>
-          <label><input type="checkbox" id="cartello_simboli"> Cartello simboli</label><br>
-          <label><input type="checkbox" id="quadro"> Quadro di cantiere</label><br>
-          <label><input type="checkbox" id="conformita_quadro"> Conformità quadro di cantiere</label><br>
-          <label><input type="checkbox" id="pos_subapp"> POS subappaltatori</label>
+      <div><label>Committente</label><input type="text" id="committente"/></div>
+
+      <div><label>Tecnico incaricato per la verifica (Nome Cognome | Titolo)</label>
+        <input type="text" id="tecnico" placeholder="Mario Rossi | RSPP"/></div>
+
+      <div>
+        <label>Logo aziendale (opzionale)</label>
+        <input type="file" id="logo" accept="image/*"/>
+        <div class="hint">Appare in alto a destra.</div>
+      </div>
+
+      <div>
+        <label>Checklist sicurezza</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <label><input type="checkbox" id="pos"/> POS</label>
+          <label><input type="checkbox" id="psc"/> PSC</label>
+          <label><input type="checkbox" id="cassetta"/> Cassetta medica</label>
+          <label><input type="checkbox" id="cartello_cantiere"/> Cartello di cantiere</label>
+          <label><input type="checkbox" id="cartello_simboli"/> Cartello simboli</label>
+          <label><input type="checkbox" id="quadro"/> Quadro di cantiere</label>
+          <label><input type="checkbox" id="conformita_quadro"/> Conformità quadro di cantiere</label>
+          <label><input type="checkbox" id="pos_subapp"/> POS subappaltatori (se presenti)</label>
         </div>
       </div>
-      <div><label>Note</label><textarea id="note"></textarea></div>
-      <div><label>Firma</label><canvas id="pad" style="width:100%;height:120px;border:1px solid #ccc"></canvas></div>
-      <button id="stampa">Stampa / PDF</button>
+
+      <div><label>Note</label><textarea id="note" placeholder="Rilievi, osservazioni..."></textarea></div>
+
+      <div>
+        <label>Firma</label>
+        <canvas id="pad" style="width:100%;height:180px;border:1px solid #d1d5db;border-radius:10px;background:#fff;touch-action:none;"></canvas>
+        <div class="btns"><button type="button" class="btn-secondary" id="clearSig">Pulisci firma</button></div>
+      </div>
+
+      <div class="btns">
+        <button type="button" id="stampa">Stampa / PDF</button>
+      </div>
     </div>
   </div>
 
   <div class="sheet" id="sheet">
     <div class="sheet-inner">
       <div class="header">
-        <div>
+        <div class="head-left">
           <div class="brand-name">SICUREZZA CANTIERE</div>
-          <div class="brand-sub">Luogo: <span id="pv-luogo"></span> — Data: <span id="pv-data"></span> — Committente: <span id="pv-committente"></span></div>
+          <div class="brand-sub">
+            Luogo: <span id="pv-luogo"></span> — 
+            Data: <span id="pv-data"></span> — 
+            Committente: <span id="pv-committente"></span>
+          </div>
         </div>
-        <div class="logo-box" id="pv-logo">LOGO</div>
+        <div class="logo-box" id="pv-logo"><span>LOGO</span></div>
       </div>
-      <div class="section-title">Presenti</div>
-      <table id="pv-presenti"><thead><tr><th>Nome</th><th>Titolo</th></tr></thead><tbody></tbody></table>
+
+      <div class="section-title">Tecnico incaricato per la verifica</div>
+      <table class="table">
+        <tr><th style="width:70%;">Nome Cognome</th><th style="width:30%;">Titolo</th></tr>
+        <tr><td id="pv-tecnico-nome"></td><td id="pv-tecnico-titolo"></td></tr>
+      </table>
+
       <div class="section-title">Checklist sicurezza</div>
-      <table>
+      <table class="table">
         <tbody>
           <tr><td>POS</td><td id="pv-pos"></td></tr>
           <tr><td>PSC</td><td id="pv-psc"></td></tr>
@@ -80,41 +141,70 @@
           <tr><td>Cartello simboli</td><td id="pv-cartello_simboli"></td></tr>
           <tr><td>Quadro di cantiere</td><td id="pv-quadro"></td></tr>
           <tr><td>Conformità quadro di cantiere</td><td id="pv-conformita_quadro"></td></tr>
-          <tr><td>POS subappaltatori</td><td id="pv-pos_subapp"></td></tr>
+          <tr><td>POS subappaltatori (se presenti)</td><td id="pv-pos_subapp"></td></tr>
         </tbody>
       </table>
+
       <div class="section-title">Note</div>
       <div class="field"><div class="val" id="pv-note"></div></div>
-      <div class="section-title">Firma</div>
-      <div class="signature-box"><img id="pv-firma"></div>
+
+      <div class="sign-row">
+        <div class="lbl">Firma</div>
+        <div class="signature-box"><span class="hint">Firma qui</span><img id="pv-firma" alt="Firma"/></div>
+      </div>
     </div>
-    <div class="footer">SG SOLARGARDA SRL — Via d’Annunzio 9 Castelnuovo del Garda, Verona — info@solargarda.it</div>
+    <div class="footer"><div class="contact">
+      SG SOLARGARDA SRL<br>
+      Via d’Annunzio 9, Castelnuovo del Garda, Verona, Italy<br>
+      info@solargarda.it
+    </div></div>
   </div>
 </div>
 
 <script>
 (function(){
   const $=id=>document.getElementById(id);
-  const luogo=$("luogo"),data=$("data"),committente=$("committente"),presenti=$("presenti"),note=$("note");
-  const pvLuogo=$("pv-luogo"),pvData=$("pv-data"),pvCommittente=$("pv-committente"),pvPresenti=$("pv-presenti").querySelector("tbody"),pvNote=$("pv-note");
-  const checks=["pos","psc","cassetta","cartello_cantiere","cartello_simboli","quadro","conformita_quadro","pos_subapp"];
-  const pad=$("pad"),ctx=pad.getContext("2d");let drawing=false,prev=null;
-  function resize(){const r=pad.getBoundingClientRect();pad.width=r.width;pad.height=r.height;}resize();
-  function posEvt(e){const r=pad.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
-  pad.addEventListener("mousedown",e=>{drawing=true;prev=posEvt(e)});
-  pad.addEventListener("mousemove",e=>{if(!drawing)return;const p=posEvt(e);ctx.beginPath();ctx.moveTo(prev.x,prev.y);ctx.lineTo(p.x,p.y);ctx.stroke();prev=p;update();});
-  window.addEventListener("mouseup",()=>{drawing=false;update();});
-  function update(){
-    pvLuogo.textContent=luogo.value;pvData.textContent=data.value;pvCommittente.textContent=committente.value;
-    pvNote.textContent=note.value;
-    pvPresenti.innerHTML="";presenti.value.split(/\n/).filter(Boolean).forEach(l=>{const p=l.split("|");const tr=document.createElement("tr");tr.innerHTML=`<td>${p[0]||""}</td><td>${p[1]||""}</td>`;pvPresenti.appendChild(tr);});
-    checks.forEach(c=>{document.getElementById("pv-"+c).textContent=$(c).checked?"✓":"—";});
-    $("pv-firma").src=pad.toDataURL();
+  const luogo=$('luogo'),data=$('data'),committente=$('committente'),tecnico=$('tecnico'),note=$('note'),logo=$('logo');
+  const pvLuogo=$('pv-luogo'),pvData=$('pv-data'),pvCommittente=$('pv-committente'),pvNote=$('pv-note');
+  const pvTecnicoNome=$('pv-tecnico-nome'),pvTecnicoTitolo=$('pv-tecnico-titolo'),pvLogo=$('pv-logo'),pvFirma=$('pv-firma');
+  const checks={pos:$('pos'),psc:$('psc'),cassetta:$('cassetta'),cartello_cantiere:$('cartello_cantiere'),cartello_simboli:$('cartello_simboli'),quadro:$('quadro'),conformita_quadro:$('conformita_quadro'),pos_subapp:$('pos_subapp')};
+  const pvChecks={pos:$('pv-pos'),psc:$('pv-psc'),cassetta:$('pv-cassetta'),cartello_cantiere:$('pv-cartello_cantiere'),cartello_simboli:$('pv-cartello_simboli'),quadro:$('pv-quadro'),conformita_quadro:$('pv-conformita_quadro'),pos_subapp:$('pv-pos_subapp')};
+
+  const todayISO=new Date().toISOString().slice(0,10); data.value=todayISO;
+
+  // Firma (canvas) con supporto touch
+  const pad=$('pad'),ctx=pad.getContext('2d');let drawing=false,prev=null;
+  function resizeCanvas(){const r=pad.getBoundingClientRect();const ratio=Math.max(window.devicePixelRatio||1,1);pad.width=Math.floor(r.width*ratio);pad.height=Math.floor(r.height*ratio);ctx.setTransform(1,0,0,1,0,0);ctx.scale(ratio,ratio);ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#0f172a';}
+  new ResizeObserver(resizeCanvas).observe(pad);resizeCanvas();
+  function pos(e){const r=pad.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return {x:t.clientX-r.left,y:t.clientY-r.top};}
+  function start(e){drawing=true;prev=pos(e);e.preventDefault();}
+  function move(e){if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(prev.x,prev.y);ctx.lineTo(p.x,p.y);ctx.stroke();prev=p;e.preventDefault();updatePreview();}
+  function end(){drawing=false;prev=null;updatePreview();}
+  pad.addEventListener('mousedown',start);pad.addEventListener('mousemove',move);window.addEventListener('mouseup',end);
+  pad.addEventListener('touchstart',start,{passive:false});pad.addEventListener('touchmove',move,{passive:false});pad.addEventListener('touchend',end);
+  $('clearSig').onclick=()=>{const r=pad.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);updatePreview();};
+
+  // Logo upload
+  logo.addEventListener('change',()=>{const f=logo.files[0];if(!f){pvLogo.innerHTML='<span>LOGO</span>';return;}const img=new Image();img.onload=()=>{pvLogo.innerHTML='';pvLogo.appendChild(img);};img.src=URL.createObjectURL(f);});
+
+  function updatePreview(){
+    pvLuogo.textContent=luogo.value||'';
+    pvData.textContent=data.value?data.value.split('-').reverse().join('/'):'Data';
+    pvCommittente.textContent=committente.value||'';
+    pvNote.textContent=note.value||'';
+    // Tecnico (split su |)
+    const parts=(tecnico.value||'').split('|').map(s=>s.trim());
+    pvTecnicoNome.textContent=parts[0]||'';
+    pvTecnicoTitolo.textContent=parts[1]||'';
+    // Checks
+    Object.keys(checks).forEach(k=>{pvChecks[k].textContent=checks[k].checked?'✓':'—';});
+    try{pvFirma.src=pad.toDataURL('image/png');}catch(e){}
   }
-  [luogo,data,committente,presenti,note].forEach(el=>el.addEventListener("input",update));
-  checks.forEach(c=>$(c).addEventListener("change",update));
-  $("stampa").onclick=()=>{update();window.print();};
-  update();
+  [luogo,data,committente,tecnico,note].forEach(el=>el.addEventListener('input',updatePreview));
+  Object.values(checks).forEach(el=>el.addEventListener('change',updatePreview));
+
+  $('stampa').onclick=()=>{updatePreview();window.print();};
+  updatePreview();
 })();</script>
 </body>
 </html>
