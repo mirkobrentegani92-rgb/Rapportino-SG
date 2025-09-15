@@ -1,73 +1,128 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>Agenda</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
-    h1 { text-align: center; color: #222; }
-    .form-box { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-    label { display: block; margin-top: 10px; font-weight: bold; }
-    input, select, textarea { width: 100%; padding: 6px; margin-top: 4px; }
-    button { margin-top: 10px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; }
-    button.add { background: #007bff; color: white; }
-    button.pdf { background: #28a745; color: white; }
-    table { width: 100%; border-collapse: collapse; background: white; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background: #007bff; color: white; }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AGENDA (Compatibilità massima)</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,Helvetica,sans-serif;margin:0;background:#f6f7fb;color:#0f172a}
+  header{background:#0f172a;color:#fff;padding:16px;text-align:center;font-weight:900;font-size:20pt}
+  main{max-width:1000px;margin:0 auto;padding:16px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;box-shadow:0 2px 6px rgba(15,23,42,.05);margin-bottom:14px}
+  label{display:block;margin-top:6px;font-size:12px;color:#475569}
+  input,textarea,select{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;margin-top:4px;font-size:14px}
+  textarea{resize:vertical;min-height:70px}
+  .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  button{padding:10px 14px;border-radius:10px;border:1px solid #0f172a;background:#0f172a;color:#fff;cursor:pointer;font-weight:700}
+  button.secondary{background:#fff;color:#0f172a;border-color:#cbd5e1}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}
+  th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top}
+  th{background:#f1f5f9;text-align:left}
+  tr.done td{text-decoration:line-through;color:#64748b}
+  @page{size:A4;margin:10mm}
+  @media print{header,.controls,.no-print{display:none !important} body{background:#fff} main{padding:0} .card{box-shadow:none;border:none}}
+</style>
 </head>
 <body>
-  <h1>AGENDA</h1>
-  <div class="form-box">
-    <label>Titolo</label><input id="titolo" type="text">
-    <label>Data</label><input id="data" type="date">
-    <label>Tipo</label>
-    <select id="tipo">
-      <option>Chiamata</option>
-      <option>Richiesta</option>
-      <option>Altro</option>
-    </select>
-    <label>Priorità</label>
-    <select id="prio">
-      <option>Bassa</option>
-      <option>Normale</option>
-      <option>Alta</option>
-    </select>
-    <label>Referente</label><input id="referente" type="text">
-    <label>Telefono</label><input id="telefono" type="text">
-    <label>Note</label><textarea id="note"></textarea>
-    <button class="add" onclick="aggiungi()">Aggiungi</button>
-    <button class="pdf" onclick="stampaPDF()">Stampa PDF</button>
+<header>AGENDA</header>
+<main>
+  <div class="card controls">
+    <h3 style="margin:0 0 8px">Nuova attività</h3>
+    <div class="row-3">
+      <label>Titolo<input id="titolo" autocomplete="off"></label>
+      <label>Data<input type="date" id="data"></label>
+      <label>Tipo
+        <select id="tipo">
+          <option>Chiamata</option><option>Richiesta</option><option>Da fare</option><option>Promemoria</option>
+        </select>
+      </label>
+    </div>
+    <div class="row-3">
+      <label>Priorità
+        <select id="prio">
+          <option>Normale</option><option>Alta</option><option>Urgente</option>
+        </select>
+      </label>
+      <label>Referente<input id="ref"></label>
+      <label>Telefono<input id="tel" type="tel"></label>
+    </div>
+    <label>Note<textarea id="note"></textarea></label>
+    <div class="btns">
+      <button type="button" onclick="addTask()">Aggiungi</button>
+      <button type="button" class="secondary" onclick="printAgenda()">Stampa PDF</button>
+    </div>
   </div>
 
-  <table id="tabella">
-    <thead>
-      <tr>
-        <th>#</th><th>Data</th><th>Titolo</th><th>Tipo</th><th>Prio</th><th>Referente</th><th>Telefono</th><th>Note</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="card">
+    <h3 style="margin:0 0 8px">Attività</h3>
+    <table id="tbl">
+      <thead><tr><th>#</th><th>Data</th><th>Titolo</th><th>Tipo</th><th>Prio</th><th>Referente</th><th>Telefono</th><th>Note</th><th class="no-print">Fatto</th><th class="no-print">✖</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</main>
+<script>
+// *** IMPLEMENTAZIONE ULTRA COMPATIBILE, NIENTE STORAGE ***
+var tasks = []; // in memoria
 
-  <script>
-    let counter = 0;
-    function aggiungi() {
-      const t = document.getElementById('titolo').value;
-      const d = document.getElementById('data').value;
-      const ty = document.getElementById('tipo').value;
-      const p = document.getElementById('prio').value;
-      const r = document.getElementById('referente').value;
-      const tel = document.getElementById('telefono').value;
-      const n = document.getElementById('note').value;
-      if (!t && !d) { alert("Inserisci almeno titolo e data!"); return; }
-      counter++;
-      const row = `<tr><td>${counter}</td><td>${d}</td><td>${t}</td><td>${ty}</td><td>${p}</td><td>${r}</td><td>${tel}</td><td>${n}</td></tr>`;
-      document.querySelector("#tabella tbody").innerHTML += row;
-    }
-    function stampaPDF() {
-      window.print();
-    }
-  </script>
+function $(id){ return document.getElementById(id); }
+function todayISO(){ var d=new Date(); var z=new Date(d.getTime()-d.getTimezoneOffset()*60000); return z.toISOString().slice(0,10); }
+window.onload = function(){ $('data').value = todayISO(); render(); };
+
+function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',\"'\":'&#39;'}[m]; }); }
+
+function addTask(){
+  var titolo = $('titolo').value.trim();
+  var data = $('data').value || todayISO();
+  if(!titolo){ alert('Inserisci un titolo'); $('titolo').focus(); return; }
+  var t = {
+    data:data, titolo:titolo, tipo:$('tipo').value, prio:$('prio').value,
+    ref: $('ref').value.trim(), tel: $('tel').value.trim(), note: $('note').value.trim(), done:false
+  };
+  tasks.push(t);
+  $('titolo').value=''; $('ref').value=''; $('tel').value=''; $('note').value='';
+  render();
+}
+
+function toggleDone(i){ tasks[i].done = !tasks[i].done; render(); }
+function delTask(i){ if(confirm('Eliminare?')){ tasks.splice(i,1); render(); } }
+
+function render(){
+  var tbody = $('rows'); var html='';
+  for (var i=0;i<tasks.length;i++){
+    var t = tasks[i];
+    html += '<tr'+(t.done?' class=\"done\"':'')+'>' +
+      '<td>'+(i+1)+'</td>' +
+      '<td>'+escapeHTML(t.data||'')+'</td>' +
+      '<td>'+escapeHTML(t.titolo||'')+'</td>' +
+      '<td>'+escapeHTML(t.tipo||'')+'</td>' +
+      '<td>'+escapeHTML(t.prio||'')+'</td>' +
+      '<td>'+escapeHTML(t.ref||'')+'</td>' +
+      '<td>'+(t.tel?('<a href=\"tel:'+escapeHTML(t.tel)+'\">'+escapeHTML(t.tel)+'</a>'):'')+'</td>' +
+      '<td>'+escapeHTML(t.note||'')+'</td>' +
+      '<td class=\"no-print\"><input type=\"checkbox\" '+(t.done?'checked':'')+' onclick=\"toggleDone('+i+')\"></td>' +
+      '<td class=\"no-print\"><button onclick=\"delTask('+i+')\">✖</button></td>' +
+    '</tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+function printAgenda(){
+  if(tasks.length===0){ alert('Non ci sono attività da stampare'); return; }
+  var w = window.open('', 'PRINT');
+  w.document.write('<!doctype html><html><head><meta charset=\"utf-8\"><title>AGENDA</title>');
+  w.document.write('<style>@page{size:A4;margin:10mm} body{font-family:sans-serif} table{width:100%;border-collapse:collapse} th,td{border:1px solid #999;padding:6px} th{background:#eee;text-align:left}</style>');
+  w.document.write('</head><body><h2>AGENDA</h2><table><tr><th>#</th><th>Data</th><th>Titolo</th><th>Tipo</th><th>Prio</th><th>Referente</th><th>Telefono</th><th>Note</th><th>Fatto</th></tr>');
+  for(var i=0;i<tasks.length;i++){
+    var t=tasks[i];
+    w.document.write('<tr><td>'+(i+1)+'</td><td>'+t.data+'</td><td>'+escapeHTML(t.titolo)+'</td><td>'+t.tipo+'</td><td>'+t.prio+'</td><td>'+escapeHTML(t.ref||'')+'</td><td>'+(t.tel||'')+'</td><td>'+escapeHTML(t.note||'')+'</td><td>'+(t.done?'✓':'')+'</td></tr>');
+  }
+  w.document.write('</table></body></html>');
+  w.document.close(); w.focus(); setTimeout(function(){w.print(); w.close();}, 200);
+}
+// Invio rapido
+document.addEventListener('keydown',function(e){ if(e.key==='Enter' && (document.activeElement.id==='titolo' || document.activeElement.id==='note')){ e.preventDefault(); addTask(); } });
+</script>
 </body>
 </html>
