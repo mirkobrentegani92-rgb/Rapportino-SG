@@ -1,150 +1,42 @@
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SG SOLARGARDA SRL – Rapportino di Cantiere</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SG SOLARGARDA SRL – App</title>
 <style>
   :root{
-    --a4-w:210mm; --a4-h:297mm; --pad:10mm;
-    --fg:#0f172a; --muted:#475569; --line:#0f172a; --bg:#f6f7fb;
-    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,Helvetica,sans-serif;
+    --bg:#f6f7fb; --ink:#0f172a;
+    --btn1:#16a34a;  /* Rapportino - green */
+    --btn2:#4f46e5;  /* Report - indigo */
+    --btn3:#dc2626;  /* Sicurezza - red */
+    --btn4:#d97706;  /* Magazzino - amber */
+    --btn5:#2563eb;  /* Agenda - blue */
   }
-  html,body{height:100%;background:var(--bg)}
-  body{margin:0;font-family:var(--font);color:var(--fg)}
-  .app{display:grid;grid-template-columns:420px 1fr;gap:18px;padding:18px}
-  .panel{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;position:sticky;top:18px;box-shadow:0 2px 6px rgba(15,23,42,.05)}
-  .panel h2{margin:0 0 12px;font-size:18px}
-  .grid{display:grid;gap:10px}
-  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
-  input[type="text"],input[type="date"],input[type="number"],textarea{width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;font-size:14px;background:#fff}
-  textarea{resize:vertical;min-height:80px}
-  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  button{appearance:none;border:1px solid #0f172a;background:#0f172a;color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
-  .btn-secondary{background:#fff;color:#0f172a;border-color:#cbd5e1}
-
-  .sheet{width:var(--a4-w);min-height:var(--a4-h);background:#fff;margin:0 auto;border:1px solid #e5e7eb;box-shadow:0 2px 6px rgba(15,23,42,.05);position:relative}
-  .sheet-inner{padding:var(--pad)}
-  .header{display:grid;grid-template-columns:1fr auto;gap:8mm;align-items:center;border-bottom:2px solid var(--line);padding-bottom:6mm;margin-bottom:6mm}
-  .brand-name{font-weight:900;letter-spacing:.6px;font-size:18pt}
-  .brand-sub{color:var(--muted);font-size:10pt}
-  .logo-box{width:34mm;height:34mm;border:1px dashed #cbd5e1;display:grid;place-items:center;font-size:10px;color:#94a3b8;overflow:hidden}
-  .logo-box img{max-width:100%;max-height:100%;object-fit:contain}
-
-  .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin-bottom:6mm}
-  .field{border:1px solid var(--line);padding:3mm;min-height:12mm;border-radius:4px}
-  .field .lbl{font-size:9pt;color:var(--muted);margin-bottom:1mm}
-  .field .val{font-size:11pt;font-weight:600;min-height:6mm;white-space:pre-wrap}
-  .section-title{margin-top:4mm;margin-bottom:2mm;font-weight:800;font-size:11pt;letter-spacing:.2px}
-  table.table{width:100%;border-collapse:collapse;margin-top:3mm;font-size:10.5pt}
-  .table th,.table td{border:1px solid var(--line);padding:2.5mm}
-  .table th{text-align:left;background:#f8fafc}
-  .sign-row{display:grid;grid-template-columns:1fr 1fr;gap:8mm;margin-top:8mm}
-  .signature-box{border:1px solid var(--line);height:35mm;position:relative;display:grid;place-items:center;border-radius:4px}
-  .signature-box .hint{position:absolute;top:4px;left:6px;font-size:9pt;color:var(--muted)}
-  .signature-box img{max-width:100%;max-height:100%;object-fit:contain}
-
-  .footer{position:absolute;left:0;right:0;bottom:0;border-top:1.5px solid var(--line);padding:4mm var(--pad);font-size:9.5pt;color:var(--fg);display:flex;justify-content:space-between;align-items:center}
-  .footer .contact{line-height:1.35}
-
-  @media (max-width:980px){.app{grid-template-columns:1fr}.panel{position:static;order:2}.sheet{order:1}}
-  @page{size:A4;margin:10mm}
-  @media print{body{background:#fff}.panel,.page-hint{display:none !important}.app{display:block;padding:0}.sheet{border:none;box-shadow:none;margin:0}}
+  *{box-sizing:border-box}
+  body {font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,Helvetica,sans-serif; margin:0; background:var(--bg); color:var(--ink);}
+  header {background:var(--ink); color:#fff; padding:24px 16px; font-size:22pt; font-weight:900; letter-spacing:.5px; text-align:center;}
+  main {display:grid; gap:18px; padding:28px 18px; max-width:520px; margin:0 auto;}
+  a.button {display:flex; align-items:center; justify-content:center; gap:10px; padding:18px; border-radius:14px; color:#fff; text-decoration:none; font-size:15pt; font-weight:800; box-shadow:0 8px 18px rgba(0,0,0,.12); transition:transform .06s ease, box-shadow .2s ease;}
+  a.button:active {transform:translateY(1px); box-shadow:0 4px 10px rgba(0,0,0,.18);}
+  .b1{background:linear-gradient(135deg,#16a34a,#22c55e);}
+  .b2{background:linear-gradient(135deg,#4f46e5,#6366f1);}
+  .b3{background:linear-gradient(135deg,#dc2626,#ef4444);}
+  .b4{background:linear-gradient(135deg,#d97706,#f59e0b);}
+  .b5{background:linear-gradient(135deg,#2563eb,#3b82f6);}
+  .emoji{font-size:22pt; line-height:1;}
+  footer{padding:20px; text-align:center; color:#64748b; font-size:11pt}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="panel">
-    <h2>Dati Rapportino</h2>
-    <div class="grid">
-      <div class="row-2">
-        <div><label>Luogo</label><input type="text" id="luogo"/></div>
-        <div><label>Data</label><input type="date" id="data"/></div>
-      </div>
-      <div class="row-2">
-        <div><label>N. Rapportino</label><input type="text" id="num"/></div>
-        <div><label>Commessa</label><input type="text" id="commessa"/></div>
-      </div>
-      <div class="row-2">
-        <div><label>Operatore</label><input type="text" id="operatore"/></div>
-        <div><label>Ore lavorate</label><input type="number" step="0.25" id="ore"/></div>
-      </div>
-      <div><label>Attività svolta</label><textarea id="attivita"></textarea></div>
-      <div><label>Materiali (DESCR | QTY | UM)</label><textarea id="materiali"></textarea></div>
-      <div><label>Note</label><textarea id="note"></textarea></div>
-      <div class="row-2">
-        <div>
-          <label>Firma</label>
-          <canvas id="pad" style="width:100%;height:180px;border:1px solid #d1d5db;border-radius:10px;background:#fff;touch-action:none;"></canvas>
-          <div class="btns"><button type="button" class="btn-secondary" id="clearSig">Pulisci firma</button></div>
-        </div>
-        <div>
-          <label>Logo aziendale (opzionale)</label>
-          <input type="file" id="logo" accept="image/*"/>
-        </div>
-      </div>
-      <div class="btns">
-        <button type="button" id="stampa">Stampa / PDF</button>
-        <button type="button" class="btn-secondary" id="salva">Salva dati</button>
-        <button type="button" class="btn-secondary" id="ripristina">Ripristina</button>
-        <button type="button" class="btn-secondary" id="reset">Svuota</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="sheet" id="sheet">
-    <div class="sheet-inner">
-      <div class="header">
-        <div><div class="brand-name">SG SOLARGARDA SRL</div><div class="brand-sub">Rapportino di cantiere • <span id="pv-luogo">Luogo</span> — <span id="pv-data">Data</span></div></div>
-        <div class="logo-box" id="pv-logo"><span>LOGO</span></div>
-      </div>
-      <div class="meta">
-        <div class="field"><div class="lbl">N. Rapportino</div><div class="val" id="pv-num"></div></div>
-        <div class="field"><div class="lbl">Commessa</div><div class="val" id="pv-commessa"></div></div>
-        <div class="field"><div class="lbl">Operatore</div><div class="val" id="pv-operatore"></div></div>
-      </div>
-      <div class="field"><div class="lbl">Attività svolta</div><div class="val" id="pv-attivita" style="min-height:28mm;"></div></div>
-      <div class="section-title">Materiali</div>
-      <table class="table" id="pv-mat-table"><thead><tr><th>Descrizione</th><th>Quantità</th><th>UM</th></tr></thead><tbody></tbody></table>
-      <div class="sign-row">
-        <div><div class="lbl">Firma</div><div class="signature-box"><span class="hint">Firma qui</span><img id="pv-firma"/></div></div>
-        <div><div class="lbl">Note</div><div class="field" style="height:35mm;"><div class="val" id="pv-note"></div></div></div>
-      </div>
-    </div>
-    <div class="footer"><div class="contact">
-      SG SOLARGARDA SRL<br>
-      Via d’Annunzio 9, Castelnuovo del Garda, Verona, Italy<br>
-      info@solargarda.it
-    </div></div>
-  </div>
-</div>
-<script>
-(function(){
-  const $=id=>document.getElementById(id);
-  const luogo=$('luogo'),data=$('data'),num=$('num'),commessa=$('commessa'),operatore=$('operatore'),ore=$('ore'),attivita=$('attivita'),materiali=$('materiali'),note=$('note'),logo=$('logo');
-  const pvLuogo=$('pv-luogo'),pvData=$('pv-data'),pvNum=$('pv-num'),pvCommessa=$('pv-commessa'),pvOperatore=$('pv-operatore'),pvAttivita=$('pv-attivita'),pvMatTable=$('pv-mat-table').querySelector('tbody'),pvFirma=$('pv-firma'),pvLogoBox=$('pv-logo'),pvNote=$('pv-note');
-  const todayISO=new Date().toISOString().slice(0,10); data.value=todayISO;
-  const pad=$('pad'),ctx=pad.getContext('2d');let drawing=false,prev=null;
-  function resizeCanvas(){const r=pad.getBoundingClientRect();const ratio=Math.max(window.devicePixelRatio||1,1);pad.width=r.width*ratio;pad.height=r.height*ratio;ctx.setTransform(1,0,0,1,0,0);ctx.scale(ratio,ratio);ctx.lineWidth=2;ctx.lineCap='round';ctx.strokeStyle='#0f172a';}
-  new ResizeObserver(resizeCanvas).observe(pad);resizeCanvas();
-  function pos(e){const r=pad.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return {x:t.clientX-r.left,y:t.clientY-r.top};}
-  function start(e){drawing=true;prev=pos(e);e.preventDefault();}
-  function move(e){if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(prev.x,prev.y);ctx.lineTo(p.x,p.y);ctx.stroke();prev=p;e.preventDefault();updatePreview();}
-  function end(){drawing=false;prev=null;updatePreview();}
-  pad.addEventListener('mousedown',start);pad.addEventListener('mousemove',move);window.addEventListener('mouseup',end);
-  pad.addEventListener('touchstart',start,{passive:false});pad.addEventListener('touchmove',move,{passive:false});pad.addEventListener('touchend',end);
-  $('clearSig').onclick=()=>{const r=pad.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);updatePreview();};
-  logo.addEventListener('change',()=>{const f=logo.files[0];if(!f){pvLogoBox.innerHTML='<span>LOGO</span>';return;}const img=new Image();img.onload=()=>{pvLogoBox.innerHTML='';pvLogoBox.appendChild(img);};img.src=URL.createObjectURL(f);});
-  function parseMat(t){return t.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{const p=l.split('|').map(s=>s.trim());return {descr:p[0]||'',qty:p[1]||'',um:p[2]||''};});}
-  function updatePreview(){pvLuogo.textContent=luogo.value||'Luogo';pvData.textContent=data.value?data.value.split('-').reverse().join('/'):'Data';pvNum.textContent=num.value||'';pvCommessa.textContent=commessa.value||'';pvOperatore.textContent=(operatore.value+(ore.value?(' — '+ore.value+' h'):'')).trim();pvAttivita.textContent=attivita.value||'';pvNote.textContent=note.value||'';const items=parseMat(materiali.value);pvMatTable.innerHTML='';for(let i=0;i<Math.max(5,items.length);i++){const r=items[i]||{descr:'',qty:'',um:''};const tr=document.createElement('tr');tr.innerHTML=`<td style="height:10mm;">${r.descr}</td><td>${r.qty}</td><td>${r.um}</td>`;pvMatTable.appendChild(tr);}try{pvFirma.src=pad.toDataURL('image/png');}catch(e){}}
-  [luogo,data,num,commessa,operatore,ore,attivita,materiali,note].forEach(el=>el.addEventListener('input',updatePreview));
-  $('salva').onclick=()=>{const d={luogo:luogo.value,data:data.value,num:num.value,commessa:commessa.value,operatore:operatore.value,ore:ore.value,attivita:attivita.value,materiali:materiali.value,note:note.value,firma:pad.toDataURL()};localStorage.setItem('sg_solargarda',JSON.stringify(d));alert('Dati salvati.');};
-  $('ripristina').onclick=()=>{const raw=localStorage.getItem('sg_solargarda');if(!raw){alert('Nessun dato salvato');return;}const d=JSON.parse(raw);luogo.value=d.luogo||'';data.value=d.data||todayISO;num.value=d.num||'';commessa.value=d.commessa||'';operatore.value=d.operatore||'';ore.value=d.ore||'';attivita.value=d.attivita||'';materiali.value=d.materiali||'';note.value=d.note||'';const img=new Image();img.onload=()=>{const r=pad.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);ctx.drawImage(img,0,0,r.width,r.height);updatePreview();};if(d.firma)img.src=d.firma;else updatePreview();};
-  $('reset').onclick=()=>{if(!confirm('Sicuro?'))return;[luogo,num,commessa,operatore,ore,attivita,materiali,note].forEach(el=>el.value='');data.value=todayISO;const r=pad.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);pvLogoBox.innerHTML='<span>LOGO</span>';logo.value='';updatePreview();};
-  $('stampa').onclick=()=>{updatePreview();window.print();};
-  updatePreview();
-})();</script>
+  <header>SG SOLARGARDA SRL</header>
+  <main>
+    <a class="button b1" href="rapportino.html"><span class="emoji">📄</span> <span>Rapportino</span></a>
+    <a class="button b2" href="report_cantiere.html"><span class="emoji">📝</span> <span>Report di cantiere</span></a>
+    <a class="button b3" href="sicurezza_cantiere.html"><span class="emoji">⚠️</span> <span>Sicurezza cantiere</span></a>
+    <a class="button b4" href="magazzino_bolla_semplice.html"><span class="emoji">📦</span> <span>Magazzino</span></a>
+    <a class="button b5" href="agenda.html"><span class="emoji">📅</span> <span>Agenda</span></a>
+  </main>
+  <footer>Versione Home colorata</footer>
 </body>
 </html>
