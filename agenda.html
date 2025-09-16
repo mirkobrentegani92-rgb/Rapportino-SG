@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>AGENDA (Compatibilità massima)</title>
+<title>AGENDA – stampa riga</title>
 <style>
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,Helvetica,sans-serif;margin:0;background:#f6f7fb;color:#0f172a}
   header{background:#0f172a;color:#fff;padding:16px;text-align:center;font-weight:900;font-size:20pt}
@@ -16,10 +16,11 @@
   .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
   button{padding:10px 14px;border-radius:10px;border:1px solid #0f172a;background:#0f172a;color:#fff;cursor:pointer;font-weight:700}
   button.secondary{background:#fff;color:#0f172a;border-color:#cbd5e1}
-  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px;background:#fff}
   th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top}
   th{background:#f1f5f9;text-align:left}
   tr.done td{text-decoration:line-through;color:#64748b}
+  .actions{display:flex;gap:6px;justify-content:center}
   @page{size:A4;margin:10mm}
   @media print{header,.controls,.no-print{display:none !important} body{background:#fff} main{padding:0} .card{box-shadow:none;border:none}}
 </style>
@@ -49,80 +50,63 @@
     </div>
     <label>Note<textarea id="note"></textarea></label>
     <div class="btns">
-      <button type="button" onclick="addTask()">Aggiungi</button>
-      <button type="button" class="secondary" onclick="printAgenda()">Stampa PDF</button>
+      <button type="button" onclick="aggiungi()">Aggiungi</button>
+      <button type="button" class="secondary" onclick="stampaTabella()">Stampa tutta la tabella</button>
+      <button type="button" class="secondary" onclick="stampaUltima()">Stampa ultima riga</button>
     </div>
   </div>
 
   <div class="card">
     <h3 style="margin:0 0 8px">Attività</h3>
     <table id="tbl">
-      <thead><tr><th>#</th><th>Data</th><th>Titolo</th><th>Tipo</th><th>Prio</th><th>Referente</th><th>Telefono</th><th>Note</th><th class="no-print">Fatto</th><th class="no-print">✖</th></tr></thead>
+      <thead><tr><th>#</th><th>Data</th><th>Titolo</th><th>Tipo</th><th>Prio</th><th>Referente</th><th>Telefono</th><th>Note</th><th class="no-print">Stampa</th><th class="no-print">Fatto</th><th class="no-print">✖</th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
   </div>
 </main>
 <script>
-// *** IMPLEMENTAZIONE ULTRA COMPATIBILE, NIENTE STORAGE ***
-var tasks = []; // in memoria
-
-function $(id){ return document.getElementById(id); }
-function todayISO(){ var d=new Date(); var z=new Date(d.getTime()-d.getTimezoneOffset()*60000); return z.toISOString().slice(0,10); }
-window.onload = function(){ $('data').value = todayISO(); render(); };
-
-function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',\"'\":'&#39;'}[m]; }); }
-
-function addTask(){
-  var titolo = $('titolo').value.trim();
-  var data = $('data').value || todayISO();
-  if(!titolo){ alert('Inserisci un titolo'); $('titolo').focus(); return; }
-  var t = {
-    data:data, titolo:titolo, tipo:$('tipo').value, prio:$('prio').value,
-    ref: $('ref').value.trim(), tel: $('tel').value.trim(), note: $('note').value.trim(), done:false
-  };
-  tasks.push(t);
-  $('titolo').value=''; $('ref').value=''; $('tel').value=''; $('note').value='';
-  render();
+var tasks=[];
+function $(id){return document.getElementById(id)}
+function todayISO(){var d=new Date();var z=new Date(d.getTime()-d.getTimezoneOffset()*60000);return z.toISOString().slice(0,10)}
+window.onload=function(){$('data').value=todayISO();render()}
+function escapeHTML(s){return (s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',\"'\":'&#39;'}[m]})}
+function aggiungi(){
+  var t=$('titolo').value.trim(); if(!t){alert('Inserisci un titolo');return}
+  var obj={data:$('data').value||todayISO(),titolo:t,tipo:$('tipo').value,prio:$('prio').value,ref:$('ref').value.trim(),tel:$('tel').value.trim(),note:$('note').value.trim(),done:false}
+  tasks.push(obj); ['titolo','ref','tel','note'].forEach(id=>$(id).value=''); render();
 }
-
-function toggleDone(i){ tasks[i].done = !tasks[i].done; render(); }
-function delTask(i){ if(confirm('Eliminare?')){ tasks.splice(i,1); render(); } }
-
+function toggleDone(i){tasks[i].done=!tasks[i].done; render()}
+function delTask(i){if(confirm('Eliminare?')){tasks.splice(i,1);render()}}
 function render(){
-  var tbody = $('rows'); var html='';
-  for (var i=0;i<tasks.length;i++){
-    var t = tasks[i];
-    html += '<tr'+(t.done?' class=\"done\"':'')+'>' +
-      '<td>'+(i+1)+'</td>' +
-      '<td>'+escapeHTML(t.data||'')+'</td>' +
-      '<td>'+escapeHTML(t.titolo||'')+'</td>' +
-      '<td>'+escapeHTML(t.tipo||'')+'</td>' +
-      '<td>'+escapeHTML(t.prio||'')+'</td>' +
-      '<td>'+escapeHTML(t.ref||'')+'</td>' +
-      '<td>'+(t.tel?('<a href=\"tel:'+escapeHTML(t.tel)+'\">'+escapeHTML(t.tel)+'</a>'):'')+'</td>' +
-      '<td>'+escapeHTML(t.note||'')+'</td>' +
-      '<td class=\"no-print\"><input type=\"checkbox\" '+(t.done?'checked':'')+' onclick=\"toggleDone('+i+')\"></td>' +
-      '<td class=\"no-print\"><button onclick=\"delTask('+i+')\">✖</button></td>' +
-    '</tr>';
-  }
-  tbody.innerHTML = html;
+  var body=$('rows'); body.innerHTML='';
+  tasks.forEach(function(t,i){
+    var tr=document.createElement('tr'); if(t.done) tr.className='done';
+    tr.innerHTML='<td>'+(i+1)+'</td><td>'+t.data+'</td><td>'+escapeHTML(t.titolo)+'</td><td>'+t.tipo+'</td><td>'+t.prio+'</td><td>'+escapeHTML(t.ref||'')+'</td><td>'+(t.tel||'')+'</td><td>'+escapeHTML(t.note||'')+'</td>'+
+                 '<td class="no-print"><button onclick="stampaRiga('+i+')">🖨️</button></td>'+
+                 '<td class="no-print"><input type="checkbox" '+(t.done?'checked':'')+' onclick="toggleDone('+i+')"></td>'+
+                 '<td class="no-print"><button onclick="delTask('+i+')">✖</button></td>';
+    body.appendChild(tr);
+  });
 }
-
-function printAgenda(){
-  if(tasks.length===0){ alert('Non ci sono attività da stampare'); return; }
-  var w = window.open('', 'PRINT');
-  w.document.write('<!doctype html><html><head><meta charset=\"utf-8\"><title>AGENDA</title>');
-  w.document.write('<style>@page{size:A4;margin:10mm} body{font-family:sans-serif} table{width:100%;border-collapse:collapse} th,td{border:1px solid #999;padding:6px} th{background:#eee;text-align:left}</style>');
-  w.document.write('</head><body><h2>AGENDA</h2><table><tr><th>#</th><th>Data</th><th>Titolo</th><th>Tipo</th><th>Prio</th><th>Referente</th><th>Telefono</th><th>Note</th><th>Fatto</th></tr>');
-  for(var i=0;i<tasks.length;i++){
-    var t=tasks[i];
-    w.document.write('<tr><td>'+(i+1)+'</td><td>'+t.data+'</td><td>'+escapeHTML(t.titolo)+'</td><td>'+t.tipo+'</td><td>'+t.prio+'</td><td>'+escapeHTML(t.ref||'')+'</td><td>'+(t.tel||'')+'</td><td>'+escapeHTML(t.note||'')+'</td><td>'+(t.done?'✓':'')+'</td></tr>');
-  }
-  w.document.write('</table></body></html>');
-  w.document.close(); w.focus(); setTimeout(function(){w.print(); w.close();}, 200);
+function template(rows){
+  var html='<!doctype html><html><head><meta charset="utf-8"><title>AGENDA</title><style>@page{size:A4;margin:10mm}body{font-family:sans-serif} table{width:100%;border-collapse:collapse} th,td{border:1px solid #999;padding:6px} th{background:#eee;text-align:left}</style></head><body>';
+  html+='<h2>AGENDA</h2><table><tr><th>#</th><th>Data</th><th>Titolo</th><th>Tipo</th><th>Prio</th><th>Referente</th><th>Telefono</th><th>Note</th><th>Fatto</th></tr>';
+  rows.forEach(function(t,i){
+    html+='<tr><td>'+(i+1)+'</td><td>'+t.data+'</td><td>'+escapeHTML(t.titolo)+'</td><td>'+t.tipo+'</td><td>'+t.prio+'</td><td>'+escapeHTML(t.ref||'')+'</td><td>'+(t.tel||'')+'</td><td>'+escapeHTML(t.note||'')+'</td><td>'+(t.done?'✓':'')+'</td></tr>';
+  });
+  html+='</table></body></html>'; return html;
 }
-// Invio rapido
-document.addEventListener('keydown',function(e){ if(e.key==='Enter' && (document.activeElement.id==='titolo' || document.activeElement.id==='note')){ e.preventDefault(); addTask(); } });
+function stampaTabella(){
+  if(!tasks.length){alert('Niente da stampare');return}
+  var w=window.open('','PRINT'); w.document.open(); w.document.write(template(tasks)); w.document.close(); w.focus(); setTimeout(function(){w.print(); w.close()},200);
+}
+function stampaUltima(){
+  if(!tasks.length){alert('Prima aggiungi una riga');return}
+  stampaRiga(tasks.length-1);
+}
+function stampaRiga(i){
+  var w=window.open('','PRINT'); w.document.open(); w.document.write(template([tasks[i]])); w.document.close(); w.focus(); setTimeout(function(){w.print(); w.close()},200);
+}
 </script>
 </body>
 </html>
